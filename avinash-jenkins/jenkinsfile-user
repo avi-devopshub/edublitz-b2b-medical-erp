@@ -1,0 +1,129 @@
+pipeline {
+
+    agent {
+        label 'worker'
+    }
+
+    tools {
+        maven 'maven'
+    }
+
+    environment {
+        aws_cred = credentials('aws-cred')
+        ecr_repo = '554663574879.dkr.ecr.ap-south-1.amazonaws.com/user-service'
+    }
+
+    stages {
+
+        stage('Git-checkout') {
+            steps {
+                git branch: 'dev', url: 'https://github.com/avi-devopshub/edublitz-b2b-medical-erp.git'
+
+                echo "code-checkout completed"
+            }
+        }
+
+        stage('Maven-build') {
+            steps {
+                dir('user-service') {
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+
+            post {
+                success {
+                    archiveArtifacts artifacts: '**/target/*.jar' fingerprint: true
+                }
+            }
+        }
+
+        stage('OWASP Dependency Check'){
+            steps{
+                dir('user-service'){
+                    withCredentials([
+                        string(
+                            credentialsId: 'NVD_API_KEY',
+                            variable: 'NVD_API_KEY'
+                         )
+                     ]) {
+                         sh '''
+                             mvn org.owasp:dependency-check-maven:check \
+                             -DnvdApiKeyEnvironmentVariable=NVD_API_KEY
+                         '''
+                    }
+                }
+            }
+        }
+
+        stage('Sonarqube-analysis') {
+            steps {
+                dir('user-service') {
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
+
+        stage('Sonarqube-quality-gates') {
+            steps {
+                timeout(time: 5, unit: 'MINUTE') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Trivy Filesystem Scan'){
+            steps{
+				dir('user-service'){
+                sh '''
+                   trivy fs --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 0 .
+                '''
+				}
+            }
+        }
+
+        stage('Artifacts-to-s3') {
+            steps {
+                dir('user-service') {
+                    sh '''
+                        aws s3 cp target/*.jar s3://avidevops.fun/user-service/user.jar
+                    '''
+                }
+            }
+        }
+
+        stage('Docker-build') {
+            steps {
+                dir('user-service') {
+                    sh '''
+                        docker build -t user-service:latest .
+                    '''
+                }
+            }
+        }
+
+        stage('Trivy-docker-image-scan'){
+            steps {
+                sh '''
+                    trivy image --cache-dir /var/lib/trivy --scanners vuln --severity HIGH,CRITICAL --skip-java-db-update --exit-code 0 user-service:latest
+                '''
+            }
+        }
+
+        stage('image-push-to-ecr') {
+            steps {
+                sh '''
+                    aws ecr get-login-password \
+                    --region ap-south-1 | \
+                    docker login \
+                    --username AWS \
+                    --password-stdin 554663574879.dkr.ecr.ap-south-1.amazonaws.com
+
+                    docker tag user-service:latest \
+                    ${ecr_repo}:${BUILD_NUMBER}
+
+                    docker push ${ecr_repo}:${BUILD_NUMBER}
+                '''
+            }
+        }
+    }
+}

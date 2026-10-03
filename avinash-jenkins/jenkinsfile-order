@@ -87,7 +87,7 @@ pipeline {
             steps {
                 dir('order-service') {
                     sh '''
-                        aws s3 cp target/*.jar s3://avidevops.fun/order-service/user.jar
+                        aws s3 cp target/*.jar s3://avidevops.fun/order-service/order.jar
                     '''
                 }
             }

@@ -103,10 +103,15 @@ pipeline {
             }
         }
 
-        stage('Trivy-docker-image-scan'){
+        stage('Trivy-docker-image-scan') {
             steps {
-                sh '''
-                    trivy image --cache-dir /var/lib/trivy --scanners vuln --severity HIGH,CRITICAL --skip-java-db-update --exit-code 0 user-service:latest
+                 sh '''
+                    trivy image \
+                    --cache-dir .trivy-cache \
+                    --scanners vuln \
+                    --severity HIGH,CRITICAL \
+                    --exit-code 0 \
+                    user-service:latest
                 '''
             }
         }

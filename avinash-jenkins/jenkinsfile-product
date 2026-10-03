@@ -11,6 +11,7 @@ pipeline {
     environment {
         aws_cred = credentials('aws-cred')
         ecr_repo = '554663574879.dkr.ecr.ap-south-1.amazonaws.com/product-service'
+        
     }
 
     stages {

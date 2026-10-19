@@ -2,6 +2,9 @@ pipeline {
     agent {
         label 'worker'
     }
+	environment{
+		REPO_URL = '554663574879.dkr.ecr.ap-south-1.amazonaws.com/user-service'
+	}
 
     tools {
         jdk 'jdk'
@@ -69,35 +72,31 @@ pipeline {
 	
 
 
-stage('OWASP Dependency Check') {
-    steps {
-        dir('user-service') {
-            sh 'mkdir -p dependency-check-report'
 
-            dependencyCheck(
-                odcInstallation: 'owasp',
-                nvdCredentialsId: 'NVD_API_KEY',
-                additionalArguments: '--scan . --format XML --format HTML --out dependency-check-report'
-            )
-        }
-    }
-    post {
-        always {
-            dependencyCheckPublisher(
-                pattern: 'user-service/dependency-check-report/dependency-check-report.xml',
-                stopBuild: false,
-                skipNoReportFiles: false
-            )
 
-            archiveArtifacts(
-                artifacts: 'user-service/dependency-check-report/**',
-                allowEmptyArchive: true,
-                fingerprint: true
-            )
-        }
-    }
-}
+	stage('docker-build'){
+		steps{
+			dir('user-service'){
+				sh '''
+				docker build -t ${REPO_URL}/user-service:${BUILD_NUMBER} .
+				'''
+			}
+		}
+	}
+	
+		
+	stage('pust-to-ecr'){
+		
+		steps{
+			
+			sh '''
+			    aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 554663574879.dkr.ecr.ap-south-1.amazonaws.com
+				docker push ${REPO_URL}/user-service:${BUILD_NUMBER}
+			'''
+		}
+	}
 
+	
 	
     }
 

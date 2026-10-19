@@ -72,6 +72,7 @@ stage('OWASP Dependency Check') {
         dir('user-service') {
             dependencyCheck(
                 odcInstallation: 'owasp',
+				 nvdCredentialsId: 'NVD_API_KEY',
                 additionalArguments: '--scan . --format XML --format HTML --out dependency-check-report'
             )
         }

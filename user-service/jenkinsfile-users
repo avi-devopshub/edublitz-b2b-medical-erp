@@ -32,7 +32,7 @@ pipeline {
             }
             post {
                 always {
-                    junit testResults: 'user-service/target/surefire-reports/*.xml',
+                    junit testResults: '**/user-service/target/surefire-reports/*.xml',
                           allowEmptyResults: true
                 }
             }

@@ -45,19 +45,8 @@ pipeline {
                 }
             }
         }
-    }
-
-    post {
-        success {
-            echo 'Build, unit tests, and packaging completed successfully.'
-			archiveArtifacts artifacts: 'user-service/target/*.jar',  fingerprint: true
-        }
-        failure {
-            echo 'Pipeline failed. Check the console output.'
-        }
-    }
-	
-	stage('sonarqube-analysis'){
+		
+		stage('sonarqube-analysis'){
 		steps{
 			withSonarQubeEnv('sonar'){
 				dir('user-service'){
@@ -74,4 +63,17 @@ pipeline {
 		}
 		
 	}
+    }
+
+    post {
+        success {
+            echo 'Build, unit tests, and packaging completed successfully.'
+			archiveArtifacts artifacts: 'user-service/target/*.jar',  fingerprint: true
+        }
+        failure {
+            echo 'Pipeline failed. Check the console output.'
+        }
+    }
+	
+	
 }

@@ -4,7 +4,7 @@ pipeline{
 	}
 	stages{
 		stage('git-checkout'){
-			steps
+			steps{
 			git branch: 'dev', url: 'https://github.com/avi-devopshub/edublitz-b2b-medical-erp.git'
 			}
 		}

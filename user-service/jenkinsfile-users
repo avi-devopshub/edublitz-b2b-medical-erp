@@ -66,6 +66,35 @@ pipeline {
 			}
 		}
 	}
+	
+stage('OWASP Dependency Check') {
+    steps {
+        dir('user-service') {
+            dependencyCheck(
+                odcInstallation: 'owasp',
+                additionalArguments: '--scan . --format XML --format HTML --out dependency-check-report'
+            )
+        }
+    }
+    post {
+        always {
+            dependencyCheckPublisher(
+                pattern: 'user-service/dependency-check-report/dependency-check-report.xml',
+                stopBuild: false,
+                skipNoReportFiles: false
+            )
+
+            archiveArtifacts(
+                artifacts: 'user-service/dependency-check-report/**',
+                allowEmptyArchive: true,
+                fingerprint: true
+            )
+        }
+    }
+}
+
+	
+	
     }
 
     post {

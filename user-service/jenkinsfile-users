@@ -4,6 +4,7 @@ pipeline {
     }
 	environment{
 		REPO_URL = '554663574879.dkr.ecr.ap-south-1.amazonaws.com/user-service'
+		AWS_CRED = credentials('aws_cred')
 	}
 
     tools {

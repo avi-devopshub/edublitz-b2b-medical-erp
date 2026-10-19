@@ -2,6 +2,10 @@ pipeline{
 	agent{
 		label 'worker'
 	}
+	tools{
+		jdk 'jdk'
+		mvn 'mvn'	
+	}
 	stages{
 		stage('git-checkout'){
 			steps{

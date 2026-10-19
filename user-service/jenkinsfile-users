@@ -64,7 +64,7 @@ pipeline {
 					sh '''
 						mvn clean verify sonar:sonar \
 						-Dsonar.projectKey=mederp-user \
-						-Dsonar.host.url=http://65.2.5.30:9000 \
+						-Dsonar.host.url=http://65.2.5.30:9000 \ 
 						-Dsonar.login=sqp_c1641d17ebcc84adf327d8b24aa4841e4bc6c20f
 					'''
 					

@@ -67,12 +67,13 @@ pipeline {
 		}
 	}
 	
+
 stage('OWASP Dependency Check') {
     steps {
         dir('user-service') {
             dependencyCheck(
                 odcInstallation: 'owasp',
-				 nvdCredentialsId: 'NVD_API_KEY',
+                nvdCredentialsId: 'NVD_API_KEY',
                 additionalArguments: '--scan . --format XML --format HTML --out dependency-check-report'
             )
         }
@@ -87,12 +88,12 @@ stage('OWASP Dependency Check') {
 
             archiveArtifacts(
                 artifacts: 'user-service/dependency-check-report/**',
-                allowEmptyArchive: true,
-                fingerprint: true
+                allowEmptyArchive: true
             )
         }
     }
 }
+
 
 	
 	

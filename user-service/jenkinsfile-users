@@ -1,0 +1,13 @@
+pipeline{
+	agent{
+		label 'worker'
+	}
+	stages{
+		stage('git-checkout'){
+			git branch: 'dev', url: 'https://github.com/avi-devopshub/edublitz-b2b-medical-erp.git'
+		}
+		stage('maven-build'){
+			sh 'mvn clean package'
+		}
+	}
+}

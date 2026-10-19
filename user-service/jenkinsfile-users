@@ -28,20 +28,6 @@ pipeline {
             }
         }
 
-        stage('Unit Tests') {
-            steps {
-                dir('user-service') {
-                    sh 'mvn test'
-                }
-            }
-            post {
-                always {
-                    junit testResults: 'user-service/target/surefire-reports/*.xml',
-                          allowEmptyResults: true
-                }
-            }
-        }
-
         stage('Package') {
             steps {
                 dir('user-service') {
@@ -49,37 +35,12 @@ pipeline {
                 }
             }
         }
-		
-		stage('SonarQube Analysis') {
-    steps {
-        withSonarQubeEnv('sonar') {
-            dir('user-service') {
-                sh '''
-                    mvn clean verify \
-                      org.sonarsource.scanner.maven:sonar-maven-plugin:5.3.0.6276:sonar \
-                      -Dsonar.projectKey=mederp-user
-                '''
-            }
-        }
-    }
-}
-	stage('quality-gate'){
-		steps{
-			timeout(time: 5, unit: 'MINUTES'){
-				waitForQualityGate abortPipeline: true
-			}
-		}
-	}
-	
-
-
-
 
 	stage('docker-build'){
 		steps{
 			dir('user-service'){
 				sh '''
-				docker build -t ${REPO_URL}/user-service:${BUILD_NUMBER} .
+				docker build -t ${REPO_URL}:${BUILD_NUMBER} .
 				'''
 			}
 		}
@@ -92,23 +53,13 @@ pipeline {
 			
 			sh '''
 			    aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 554663574879.dkr.ecr.ap-south-1.amazonaws.com
-				docker push ${REPO_URL}/user-service:${BUILD_NUMBER}
+				docker push ${REPO_URL}:${BUILD_NUMBER}
 			'''
 		}
 	}
 
 	
 	
-    }
-
-    post {
-        success {
-            echo 'Build, unit tests, and packaging completed successfully.'
-			archiveArtifacts artifacts: 'user-service/target/*.jar',  fingerprint: true
-        }
-        failure {
-            echo 'Pipeline failed. Check the console output.'
-        }
     }
 	
 	

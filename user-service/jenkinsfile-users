@@ -46,20 +46,19 @@ pipeline {
             }
         }
 		
-		stage('sonarqube-analysis'){
-		steps{
-			withSonarQubeEnv('sonar'){
-				dir('user-service'){
-					sh '''
-						mvn sonar:sonar
-					'''
-					
-				}
-			}
-			
-		}
-		
-	}
+		stage('SonarQube Analysis') {
+    steps {
+        withSonarQubeEnv('sonar') {
+            dir('user-service') {
+                sh '''
+                    mvn clean verify \
+                      org.sonarsource.scanner.maven:sonar-maven-plugin:5.3.0.6276:sonar \
+                      -Dsonar.projectKey=mederp-user
+                '''
+            }
+        }
+    }
+}
 	stage('quality-gate'){
 		steps{
 			timeout(time: 5, unit: 'MINUTES'){

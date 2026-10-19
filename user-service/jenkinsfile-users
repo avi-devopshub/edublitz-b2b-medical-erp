@@ -4,10 +4,14 @@ pipeline{
 	}
 	stages{
 		stage('git-checkout'){
+			steps
 			git branch: 'dev', url: 'https://github.com/avi-devopshub/edublitz-b2b-medical-erp.git'
+			}
 		}
 		stage('maven-build'){
+			steps{
 			sh 'mvn clean package'
+			}
 		}
 	}
 }

@@ -1,23 +1,59 @@
-pipeline{
-	agent{
-		label 'worker'
-	}
-	tools{
-		jdk 'jdk'
-		maven 'mvn'	
-	}
-	stages{
-		stage('git-checkout'){
-			steps{
-			git branch: 'dev', url: 'https://github.com/avi-devopshub/edublitz-b2b-medical-erp.git'
-			}
-		}
-		stage('maven-build'){
-			steps{
-			dir('user-service'){
-			sh 'mvn clean package'
-			}
-			}
-		}
-	}
+pipeline {
+    agent {
+        label 'worker'
+    }
+
+    tools {
+        jdk 'jdk'
+        maven 'mvn'
+    }
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'dev',
+                    url: 'https://github.com/avi-devopshub/edublitz-b2b-medical-erp.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('user-service') {
+                    sh 'mvn clean compile'
+                }
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                dir('user-service') {
+                    sh 'mvn test'
+                }
+            }
+            post {
+                always {
+                    junit testResults: 'user-service/target/surefire-reports/*.xml',
+                          allowEmptyResults: true
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                dir('user-service') {
+                    sh 'mvn package -DskipTests'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Build, unit tests, and packaging completed successfully.'
+			archiveArtifacts artifacts: 'user-service/target/*.jar',  fingerprint: true
+        }
+        failure {
+            echo 'Pipeline failed. Check the console output.'
+        }
+    }
 }

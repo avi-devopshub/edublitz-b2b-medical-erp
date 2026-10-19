@@ -51,9 +51,7 @@ pipeline {
 			withSonarQubeEnv('sonar'){
 				dir('user-service'){
 					sh '''
-						mvn sonar:sonar \
-						-Dsonar.projectKey=mederp-user \
-						-Dsonar.login=sqp_c1641d17ebcc84adf327d8b24aa4841e4bc6c20f
+						mvn sonar:sonar
 					'''
 					
 				}

@@ -1,0 +1,17 @@
+# Product Service — ClusterIP
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: med-erp
+  labels:
+    app: product-service
+spec:
+  type: ClusterIP
+  selector:
+    app: product-service
+  ports:
+    - name: http
+      port: 8082
+      targetPort: 8082
+      protocol: TCP

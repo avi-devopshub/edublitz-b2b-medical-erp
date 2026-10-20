@@ -1,0 +1,31 @@
+pipeline{
+    agent{
+        label 'worker'
+    }
+    tools{
+        nodejs 'nodejs'
+    }
+    environment{
+        REPO_URL = '554663574879.dkr.ecr.ap-south-1.amazonaws.com/order-service'
+		AWS_CRED = credentials('aws_cred')
+    }
+    stages{
+        stage('frontend-build'){
+            dir('frontend'){
+            steps{
+                sh '''
+                    npm install
+                    npm run build
+                '''
+            }
+            }
+        }
+        stage('push-to-s3'){
+            dir('frontend'){
+            steps{
+                sh 'aws s3 cp dist/. s3://aviedvops.fun --recursive'
+            }
+            }
+        }
+    }
+}

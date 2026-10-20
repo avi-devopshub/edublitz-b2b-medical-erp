@@ -1,0 +1,97 @@
+pipeline {
+    agent {
+        label 'worker'
+    }
+	environment{
+		REPO_URL = '554663574879.dkr.ecr.ap-south-1.amazonaws.com/order-service'
+		AWS_CRED = credentials('aws_cred')
+	}
+
+    tools {
+        jdk 'jdk'
+        maven 'mvn'
+    }
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'dev',
+                    url: 'https://github.com/avi-devopshub/edublitz-b2b-medical-erp.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('order-service') {
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+
+
+	stage('docker-build'){
+		steps{
+			dir('order-service'){
+				sh '''
+				docker build -t ${REPO_URL}:${BUILD_NUMBER} .
+				'''
+			}
+		}
+	}
+	
+		
+	stage('pust-to-ecr'){
+		
+		steps{
+			
+			sh '''
+			   aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 554663574879.dkr.ecr.ap-south-1.amazonaws.com
+				docker push ${REPO_URL}:${BUILD_NUMBER}
+			'''
+		}
+	}
+
+    stage('update-image'){
+        steps{
+                sh '''
+                    sed -i "s|image:.*|image: ${REPO_URL}:${BUILD_NUMBER}|" k8s/deployments/order-service-deployment.yaml
+                '''
+            }
+
+        }
+        /*
+
+    stage('push-changes'){
+        steps{
+            sh '''
+                git config --global user.name avi-devopshub
+                git config --global user.email avinamk.mk1998@gmail.com
+
+                git add user-service-deployment.yaml
+                git commit -m "image has been updated"
+                git push origin dev
+            '''
+        }
+    }
+    
+
+    stage('deployment'){
+        steps{
+            sh '''
+                aws eks update-kubeconfig --name mederp --region ap-south-1
+                kubectl apply -f k8s/namespace/namespace.yaml
+                kubectl apply -f k8s/configmaps/
+                kubectl apply -f k8s/secrets/
+                kubectl apply -f k8s/services/
+                kubectl apply -f k8s/deployments/
+                kubectl apply -f k8s/hpa/
+                kubectl apply -f k8s/ingress/ingressclass.yaml
+                kubectl apply -f k8s/ingress/ingress.yaml
+            '''
+        }
+    }
+    */
+    }
+    
+
+}

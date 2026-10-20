@@ -23,18 +23,11 @@ pipeline {
         stage('Build') {
             steps {
                 dir('user-service') {
-                    sh 'mvn clean compile'
+                    sh 'mvn clean package -DskipTests'
                 }
             }
         }
 
-        stage('Package') {
-            steps {
-                dir('user-service') {
-                    sh 'mvn package -DskipTests'
-                }
-            }
-        }
 
 	stage('docker-build'){
 		steps{

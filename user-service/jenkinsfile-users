@@ -51,6 +51,17 @@ pipeline {
 		}
 	}
 
+    stages{
+        stage('update-image'){
+            steps{
+                sh '''
+                    sed -i "s|image: .*|image: ${REPO_URL}:${BUILD_NUMBER}|" k8s/deployments/user-service-deployment.yaml
+                '''
+            }
+
+        }
+    }
+
 	
 	
     }

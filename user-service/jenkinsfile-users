@@ -59,6 +59,37 @@ pipeline {
             }
 
         }
+        /*
+
+    stage('push-changes'){
+        steps{
+            sh '''
+                git config --global user.name avi-devopshub
+                git config --global user.email avinamk.mk1998@gmail.com
+
+                git add user-service-deployment.yaml
+                git commit -m "image has been updated"
+                git push origin dev
+            '''
+        }
+    }
+    */
+
+    stage('deployment'){
+        steps{
+            sh '''
+                aws eks update-kubeconfig --name mederp --region ap-south-1
+                kubectl apply -f k8s/namespace/namespace.yaml
+                kubectl apply -f k8s/configmaps/
+                kubectl apply -f k8s/secrets/
+                kubectl apply -f k8s/services/
+                kubectl apply -f k8s/deployments/
+                kubectl apply -f k8s/hpa/
+                kubectl apply -f k8s/ingress/ingressclass.yaml
+                kubectl apply -f k8s/ingress/ingress.yaml
+            '''
+        }
+    }
     }
 
 }

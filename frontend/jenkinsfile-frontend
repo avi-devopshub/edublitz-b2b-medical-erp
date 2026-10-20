@@ -11,18 +11,21 @@ pipeline{
     }
     stages{
         stage('frontend-build'){
-            dir('frontend'){
+            
             steps{
+                dir('frontend'){
                 sh '''
                     npm install
                     npm run build
                 '''
+                }
             }
-            }
+            
         }
         stage('push-to-s3'){
-            dir('frontend'){
+            
             steps{
+                dir('frontend'){
                 sh 'aws s3 cp dist/. s3://aviedvops.fun --recursive'
             }
             }
